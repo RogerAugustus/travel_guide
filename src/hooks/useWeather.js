@@ -17,18 +17,13 @@ export default function useWeather(cities, startDate, endDate) {
     const weatherMap = {};
     const allAlerts = [];
 
-    // 没有城市时，生成覆盖行程日期范围的模拟天气
-    const targetCities = (cities && cities.length > 0) ? cities : ['默认'];
+    // 没有城市时默认查广州
+    const targetCities = (cities && cities.length > 0) ? cities : ['广州'];
 
     for (const city of targetCities) {
       try {
-        let daily;
-        if (city === '默认') {
-          daily = getMockWeatherForRange(startDate, endDate);
-        } else {
-          const cityId = await lookupCity(city);
-          daily = await getWeather7d(cityId);
-        }
+        const cityId = await lookupCity(city);
+        const daily = await getWeather7d(cityId);
 
         if (daily) {
           daily.forEach((d) => {
