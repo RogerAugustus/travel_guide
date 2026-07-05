@@ -1,0 +1,18 @@
+{
+  "name": "旅行路书",
+  "short_name": "路书",
+  "description": "旅行行程规划工具 — 日历、地图、天气、吃喝玩乐一站式管理",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
