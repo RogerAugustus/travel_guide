@@ -20,16 +20,21 @@ function setCache(key, data) {
   cache.set(key, { data, time: Date.now() });
 }
 
+// 默认内置 Key（免费版每日1000次，多人共用如超额可自行设置）
+const DEFAULT_API_KEY = 'a5c1de5855b7b31553732b0dda61b959550d1679b3f94aaac5694cffaae05dda';
+
 function getApiKey() {
-  // 从 localStorage 读取用户设置的 API Key
+  // 优先读取用户自己设置的 Key，否则用内置默认 Key
   try {
     const raw = localStorage.getItem('travel-guide-settings');
     if (raw) {
       const settings = JSON.parse(raw);
-      return settings.weatherApiKey || '';
+      if (settings.weatherApiKey && settings.weatherApiKey.trim()) {
+        return settings.weatherApiKey.trim();
+      }
     }
   } catch (e) { /* ignore */ }
-  return '';
+  return DEFAULT_API_KEY;
 }
 
 // 城市搜索 → 获取 locationId

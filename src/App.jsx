@@ -63,6 +63,7 @@ function App() {
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [mobileTab, setMobileTab] = useState('calendar');
+  const [activityCollapsed, setActivityCollapsed] = useState(false);
 
   const effectiveCities = useMemo(() => {
     if (trip.cities && trip.cities.length > 0) return trip.cities;
@@ -158,8 +159,9 @@ function App() {
           <WeatherBar weatherData={weatherData} trip={trip} hasApiKey={hasApiKey} />
         </div>
 
-        <div style={{ gridColumn: '1 / -1', gridRow: '4', height: '200px', padding: '0 8px 8px 8px', overflow: 'hidden' }}>
+        <div style={{ gridColumn: '1 / -1', gridRow: '4', height: activityCollapsed ? '36px' : '200px', padding: '0 8px 8px 8px', overflow: 'hidden', transition: 'height 0.2s ease' }}>
           <ActivityPanel activityPool={trip.activityPool} tripCities={trip.cities}
+            collapsed={activityCollapsed} onToggleCollapse={() => setActivityCollapsed(!activityCollapsed)}
             onAddSuggestion={addSuggestion} onUpdateSuggestion={updateSuggestion} onDeleteSuggestion={deleteSuggestion}
             onDragToDay={handleActivityDrop} dragHandlers={dragHandlers} />
         </div>
@@ -214,6 +216,7 @@ function App() {
         {mobileTab === 'activities' && (
           <div style={{ height: '100%', overflow: 'hidden' }}>
             <ActivityPanel activityPool={trip.activityPool} tripCities={trip.cities}
+              collapsed={false} onToggleCollapse={() => {}}
               onAddSuggestion={addSuggestion} onUpdateSuggestion={updateSuggestion} onDeleteSuggestion={deleteSuggestion}
               onDragToDay={handleActivityDrop} dragHandlers={dragHandlers} />
           </div>

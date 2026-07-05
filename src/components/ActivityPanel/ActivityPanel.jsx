@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, UtensilsCrossed, GlassWater, Gamepad2, Landmark, Bus, Search, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, UtensilsCrossed, GlassWater, Gamepad2, Landmark, Bus, Search, ChevronUp, ChevronDown, ExternalLink, Sparkles } from 'lucide-react';
 import ActivityCard from './ActivityCard';
 import Modal from '../common/Modal';
 
@@ -42,6 +42,8 @@ const SELECT_STYLE = {
 export default function ActivityPanel({
   activityPool,
   tripCities,
+  collapsed = false,
+  onToggleCollapse,
   onAddSuggestion,
   onUpdateSuggestion,
   onDeleteSuggestion,
@@ -51,7 +53,7 @@ export default function ActivityPanel({
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchText, setSearchText] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const [newActivity, setNewActivity] = useState({
     name: '',
     category: 'food',
@@ -80,6 +82,34 @@ export default function ActivityPanel({
     setShowAddModal(false);
   };
 
+  // 折叠状态：只显示一条窄栏
+  if (collapsed) {
+    return (
+      <div style={{
+        background: 'var(--color-surface)', borderRadius: 'var(--radius-md)',
+        boxShadow: 'var(--shadow-sm)', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', padding: '4px 10px', height: '100%',
+        gap: '6px',
+      }}>
+        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          🍜 吃喝玩乐
+          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>({activityPool?.length || 0}条)</span>
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button onClick={() => { setShowAddModal(true); onToggleCollapse(); }} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: 'var(--radius-sm)', fontSize: '11px', fontWeight: 500, color: 'var(--color-primary)', background: 'var(--color-primary-light)', cursor: 'pointer', border: 'none' }}>
+            <Plus size={12} /> 新增
+          </button>
+          <button onClick={() => { setShowSearchModal(true); onToggleCollapse(); }} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: 'var(--radius-sm)', fontSize: '11px', fontWeight: 500, color: '#7c3aed', background: '#ede9fe', cursor: 'pointer', border: 'none' }}>
+            <Sparkles size={12} /> 搜推荐
+          </button>
+          <button onClick={onToggleCollapse} style={{ display: 'flex', alignItems: 'center', gap: '2px', padding: '3px 8px', borderRadius: 'var(--radius-sm)', fontSize: '11px', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', background: 'var(--color-bg)', cursor: 'pointer' }}>
+            <ChevronUp size={14} /> 展开
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -92,32 +122,41 @@ export default function ActivityPanel({
         overflow: 'hidden',
       }}
     >
-      {/* 头部 — 仅保留新增按钮和折叠 */}
+      {/* 头部 — 新增、搜推荐、收起按钮 */}
       <div
         style={{
           padding: '6px 10px',
-          borderBottom: collapsed ? 'none' : '1px solid var(--color-border)',
+          borderBottom: '1px solid var(--color-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-end',
           gap: '6px',
         }}
       >
-        {!collapsed && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px',
-              borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
-              color: 'var(--color-primary)', background: 'var(--color-primary-light)',
-              cursor: 'pointer', border: 'none',
-            }}
-          >
-            <Plus size={14} /> 新增
-          </button>
-        )}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => setShowAddModal(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px',
+            borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+            color: 'var(--color-primary)', background: 'var(--color-primary-light)',
+            cursor: 'pointer', border: 'none',
+          }}
+        >
+          <Plus size={14} /> 新增
+        </button>
+        <button
+          onClick={() => setShowSearchModal(true)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px',
+            borderRadius: 'var(--radius-sm)', fontSize: '12px', fontWeight: 500,
+            color: '#7c3aed', background: '#ede9fe',
+            cursor: 'pointer', border: 'none',
+          }}
+        >
+          <Sparkles size={14} /> 搜推荐
+        </button>
+        <button
+          onClick={onToggleCollapse}
           style={{
             display: 'flex', alignItems: 'center', gap: '2px', padding: '4px 8px',
             borderRadius: 'var(--radius-sm)', fontSize: '11px',
@@ -125,8 +164,7 @@ export default function ActivityPanel({
             background: 'var(--color-bg)', cursor: 'pointer',
           }}
         >
-          {collapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          {collapsed ? '展开' : '收起'}
+          <ChevronDown size={14} /> 收起
         </button>
       </div>
 
@@ -296,6 +334,119 @@ export default function ActivityPanel({
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* 搜索推荐 Modal */}
+      <Modal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} title="🔍 搜索推荐" width="520px">
+        {(() => {
+          const city = tripCities[0] || '广州';
+          const catLabel = CATEGORIES.find(c => c.key === activeCategory)?.label || '美食';
+          const catCN = activeCategory === 'all' ? '美食' : catLabel;
+          const query = `${city} ${catCN} 推荐`;
+
+          const platforms = [
+            { name: '小红书', url: `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(query)}`, color: '#ff2442', icon: '📕' },
+            { name: '大众点评', url: `https://m.dianping.com/search/keyword/1/0_${encodeURIComponent(city + catCN)}`, color: '#ff9500', icon: '⭐' },
+            { name: '马蜂窝', url: `https://www.mafengwo.cn/search/q.php?q=${encodeURIComponent(query)}`, color: '#ff9d00', icon: '🐝' },
+            { name: '抖音', url: `https://www.douyin.com/search/${encodeURIComponent(query + ' 探店')}`, color: '#000000', icon: '🎵' },
+            { name: '百度', url: `https://www.baidu.com/s?wd=${encodeURIComponent(query + ' 攻略')}`, color: '#2932e1', icon: '🔍' },
+          ];
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                基于当前城市 <strong>{city}</strong> 和分类 <strong>{catCN}</strong>，
+                点击下方平台搜索，找到喜欢的直接复制名称回来添加。
+              </div>
+
+              {/* 平台搜索链接 */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {platforms.map((p) => (
+                  <a
+                    key={p.name}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+                      background: 'var(--color-bg)', border: '1px solid var(--color-border)',
+                      textDecoration: 'none', color: 'var(--color-text)',
+                      transition: 'all var(--transition)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = p.color;
+                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>{p.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 600 }}>{p.name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>搜索「{query}」</div>
+                    </div>
+                    <ExternalLink size={14} color="var(--color-text-muted)" />
+                  </a>
+                ))}
+              </div>
+
+              {/* 快速添加区 */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Sparkles size={14} color="#7c3aed" /> 快速添加
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <input
+                    id="quick-add-input"
+                    type="text"
+                    placeholder="粘贴找到的店名/景点名..."
+                    style={{
+                      flex: 1, padding: '8px 10px', border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-sm)', fontSize: '13px', outline: 'none',
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        onAddSuggestion({
+                          name: e.target.value.trim(),
+                          category: activeCategory === 'all' ? 'food' : activeCategory,
+                          description: '',
+                          city,
+                          location: null,
+                        });
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                  <button
+                    style={{
+                      padding: '8px 14px', borderRadius: 'var(--radius-sm)', fontSize: '13px',
+                      background: '#7c3aed', color: 'white', fontWeight: 500, border: 'none', cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                    onClick={() => {
+                      const input = document.querySelector('#quick-add-input');
+                      if (input && input.value.trim()) {
+                        onAddSuggestion({
+                          name: input.value.trim(),
+                          category: activeCategory === 'all' ? 'food' : activeCategory,
+                          description: '',
+                          city,
+                          location: null,
+                        });
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    添加
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </Modal>
     </div>
   );
